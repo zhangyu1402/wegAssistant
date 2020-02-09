@@ -1,18 +1,19 @@
-from flask import Flask , request,jsonify
+from flask import Flask, request, jsonify
 import json
 import random
 from tools import *
-from flasgger import Swagger,swag_from
+from flasgger import Swagger, swag_from
 from mongo_connection import *
+
 app = Flask(__name__)
 
 Swagger(app)
-
 
 db = get_db()
 
 __ca = 1000
 __caed = 0
+
 
 @app.route('/api/<string:language>/', methods=['GET'])
 def index(language):
@@ -68,7 +69,7 @@ def index(language):
     )
 
 
-@app.route('/products',methods=[ 'GET'])
+@app.route('/products', methods=['GET'])
 def get_all_products():
     """
        get all products
@@ -95,7 +96,7 @@ def get_all_products():
     """
     page_size = int(request.args.get("page_size"))
     page_num = int(request.args.get("page_num"))
-    skio = page_size*(page_num-1)
+    skio = page_size * (page_num - 1)
 
     res = list()
     for item in db['product'].find().limit(page_size).skip(skio):
@@ -104,9 +105,7 @@ def get_all_products():
     return json.dumps(res)
 
 
-
-
-@app.route('/product/<id>',methods=[ 'GET'])
+@app.route('/product/<id>', methods=['GET'])
 def get_product_by_id(id):
     """
            get a product's infomation
@@ -134,8 +133,8 @@ def get_product_by_id(id):
     return json.dumps(product)
 
 
-@app.route('/calorie/<sku>',methods=[ 'GET'])
-def get_calorie_by_sku(sku) :
+@app.route('/calorie/<sku>', methods=['GET'])
+def get_calorie_by_sku(sku):
     """
        get a product's calorie by sku
         ---
@@ -153,12 +152,13 @@ def get_calorie_by_sku(sku) :
           200:
             description: json
     """
-    product = db['product'].find_one({"sku":int(sku)})
+    product = db['product'].find_one({"sku": int(sku)})
     ca = s_to_i(product['Calories'])
     return json.dumps(ca)
 
-@app.route('/user/calorie/<user_id>/<sku>',methods=[ 'POST'])
-def buy_prodcut(user_id,sku) :
+
+@app.route('/user/calorie/<user_id>/<sku>', methods=['POST'])
+def buy_prodcut(user_id, sku):
     """
        update a user with sku
         ---
@@ -181,7 +181,8 @@ def buy_prodcut(user_id,sku) :
     # return json.dumps()
     pass
 
-@app.route('/user/<user_id>',methods=[ 'GET'])
+
+@app.route('/user/<user_id>', methods=['GET'])
 def check_user(user_id):
     """
        check if user exsit
@@ -200,11 +201,12 @@ def check_user(user_id):
           200:
             description: number
     """
-    product = db['users'].find_one({"user_id":int(user_id)})
+    product = db['users'].find_one({"user_id": int(user_id)})
     ca = s_to_i(product['Calories'])
     return json.dumps()
 
-@app.route('/calorie/',methods=[ 'GET'])
+
+@app.route('/calorie/', methods=['GET'])
 def get_calorie():
     """
        get calorie of a list of sku
@@ -227,18 +229,37 @@ def get_calorie():
     res = []
     for sku in skus:
         product = db['product'].find_one({"sku": int(sku)})
+        item = {"sku": sku, "name": product["name"]}
+
         if "Calories" in product:
-            res.append(product['Calories'])
+            item["calories"] = product["Calories"]
         else:
-            res.append(-1)
+            item["calories"] = -1
+        res.append(item)
     return json.dumps(res)
 
 
-
-
-
-
-
+@app.route('/user/standard/<user_id>', methods=['GET'])
+def get_calorie_standard(user_id):
+    """
+       get calorie standard of a user
+        ---
+        tags:
+          - Awesomeness Language API
+        parameters:
+          - name: user_id
+            in: url
+            type: string
+            required: true
+            description: user id
+        responses:
+          500:
+            description: Error The language is not awesome!
+          200:
+            description: number
+    """
+    standard = db['user'].find_one({"user_id":user_id})
+    return json.dumps(standard)
 
 
 if __name__ == '__main__':
