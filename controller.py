@@ -108,26 +108,26 @@ def get_all_products():
 @app.route('/product/<id>', methods=['GET'])
 def get_product_by_id(id):
     """
-           get a product's infomation
-            ---
-            tags:
-              - Awesomeness Language API
-            parameters:
-              - name: id
-                in: path
-                type: string
-                required: true
-                description: page_size
-            responses:
-              500:
-                description: Error The language is not awesome!
-              200:
-                description: json
-                schema:
-                  id: awesome
+       get a product's infomation
+        ---
+        tags:
+          - Awesomeness Language API
+        parameters:
+          - name: id
+            in: path
+            type: string
+            required: true
+            description: page_size
+        responses:
+          500:
+            description: Error The language is not awesome!
+          200:
+            description: json
+            schema:
+              id: awesome
 
 
-        """
+    """
     product = db['product'].find_one({"sku": int(id)})
     product.pop("_id")
     return json.dumps(product)
@@ -201,9 +201,9 @@ def check_user(user_id):
           200:
             description: number
     """
-    product = db['users'].find_one({"user_id": int(user_id)})
-    ca = s_to_i(product['Calories'])
-    return json.dumps()
+    user = db['users'].find_one({"user_id": user_id})
+
+    return json.dumps(False if user is None else True)
 
 
 @app.route('/calorie/', methods=['GET'])
@@ -229,6 +229,8 @@ def get_calorie():
     res = []
     for sku in skus:
         product = db['product'].find_one({"sku": int(sku)})
+        if product is None:
+            print(sku)
         item = {"sku": sku, "name": product["name"]}
 
         if "Calories" in product:
@@ -258,8 +260,41 @@ def get_calorie_standard(user_id):
           200:
             description: number
     """
-    standard = db['user'].find_one({"user_id":user_id})
+    standard = db['user'].find_one({"user_id": user_id})
     return json.dumps(standard)
+
+
+@app.route('/user/history/<user_id>', methods=['GET'])
+def get_calorie_history(user_id):
+    """
+       get calorie history of a user
+        ---
+        tags:
+          - Awesomeness Language API
+        parameters:
+          - name: user_id
+            in: url
+            type: string
+            required: true
+            description: user id
+        responses:
+          500:
+            description: Error The language is not awesome!
+          200:
+            description: number
+    """
+    history = db['purchase'].find_one({"user_id": user_id})
+    cal = 0
+    for product in history['history']:
+        product_info = db['product'].find_one({"sku": int(product['sku'])})
+        cal += product_info["Calories"]
+    return json.dumps(cal)
+
+
+@app.errorhandler(Exception)
+def all_exception_handler(e):
+
+    return 'Error', 500
 
 
 if __name__ == '__main__':

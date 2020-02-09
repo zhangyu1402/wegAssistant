@@ -5,6 +5,7 @@ import logging
 import time
 from mongo_connection import *
 from tools import *
+from threading import Timer
 payload = {
            'Subscription-Key': const.Subscription_Key}
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
@@ -52,7 +53,11 @@ def grab_all_categories():
     grab_sub_cat(url,db.categories)
 
 if __name__ == '__main__' :
+    pass
 
     grab_all_categories()
+    grab_tast = Timer(60*60*24,grab_all_categories)
+    grab_tast.start()
+    grab_tast.join()
 
 # logging.info('start to grab cat{}')
