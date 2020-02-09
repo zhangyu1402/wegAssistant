@@ -4,13 +4,20 @@ import json
 import logging
 import time
 from mongo_connection import *
-
+from tools import *
 payload = {
            'Subscription-Key': const.Subscription_Key}
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 def grab_product(url):
     response = requests.get(url, params=payload)
     result = json.loads(response.text)
+    for nus in result['nutrients']:
+        nus_type = nus['type']
+        quantity  = s_to_i(nus['quantity'])
+        result[nus_type] = quantity
+    result.pop("nutrients")
+    result.pop("_links")
+    result.pop("states")
     db = get_db()
     store(db['product'],result)
 
