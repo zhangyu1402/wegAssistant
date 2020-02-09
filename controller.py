@@ -229,8 +229,6 @@ def get_calorie():
     res = []
     for sku in skus:
         product = db['product'].find_one({"sku": int(sku)})
-        if product is None:
-            print(sku)
         item = {"sku": sku, "name": product["name"]}
 
         if "Calories" in product:
