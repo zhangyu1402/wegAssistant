@@ -4,6 +4,7 @@ import random
 from tools import *
 from flasgger import Swagger, swag_from
 from mongo_connection import *
+from flask_cors import *
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ db = get_db()
 __ca = 1000
 __caed = 0
 
+CORS(app, supports_credentials=True)
 
 @app.route('/api/<string:language>/', methods=['GET'])
 def index(language):
