@@ -5,6 +5,7 @@ from tools import *
 from flasgger import Swagger, swag_from
 from mongo_connection import *
 from flask_cors import *
+from recommend import  *
 
 app = Flask(__name__)
 
@@ -292,6 +293,39 @@ def get_calorie_history(user_id):
         product_info = db['product'].find_one({"sku": int(product['sku'])})
         cal += product_info["Calories"]
     return json.dumps(cal)
+
+@app.route('/recommendation/<user_id>', methods=['GET'])
+def get_recommendation(user_id):
+    """
+       get get_recommendation for a user
+        ---
+        tags:
+          - Awesomeness Language API
+        parameters:
+          - name: user_id
+            in: url
+            type: string
+            required: true
+            description: user id
+        responses:
+          500:
+            description: Error The language is not awesome!
+          200:
+            description: number
+    """
+    data = getData.getData().getData("http://127.0.0.1:5000/products?page_size=2000&page_num=1")
+    system = recommendation(data, 150, 0, 0, 1)
+    recom = json.loads(system.final_recommend(None, 10))
+    print(type(recom))
+    response = []
+    for key in recom:
+        value = recom[key]
+        product = db['product'].find_one({"sku":int(key)})
+        value['name'] = product['name']
+        value['img'] = product['tradeIdentifiers'][0]['images'][0]
+        response.append(value)
+    return json.dumps(response)
+
 
 
 @app.errorhandler(Exception)

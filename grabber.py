@@ -10,24 +10,30 @@ payload = {
            'Subscription-Key': const.Subscription_Key}
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 def grab_product(url):
-    response = requests.get(url, params=payload)
-    result = json.loads(response.text)
-    for nus in result['nutrients']:
-        nus_type = nus['type']
-        quantity  = s_to_i(nus['quantity'])
-        result[nus_type] = quantity
-    result.pop("nutrients")
-    result.pop("_links")
-    result.pop("states")
-    db = get_db()
-    store(db['product'],result)
+    try:
+        response = requests.get(url, params=payload)
+        result = json.loads(response.text)
+        if 'nutrients' in result:
+            for nus in result['nutrients']:
+                nus_type = nus['type']
+                quantity  = s_to_i(nus['quantity'])
+                result[nus_type] = quantity
+            result.pop("nutrients")
+        result.pop("_links")
+        result.pop("states")
+        db = get_db()
+        store(db['product'],result)
+    except Exception:
+        print("error")
 
 
 def grab_sub_cat(url,colloction):
     response = requests.get(url, params=payload)
     result = json.loads(response.text)
     if 'categories' in result:
-        for cat in result['categories']:
+        tmplist = result['categories']
+        tmplist.reverse()
+        for cat in tmplist:
 
             time.sleep(0.5)
 
