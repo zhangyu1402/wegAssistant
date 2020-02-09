@@ -229,6 +229,9 @@ def get_calorie():
     res = []
     for sku in skus:
         product = db['product'].find_one({"sku": int(sku)})
+        if not product:
+            res.append({"sku": sku, "name": None, "calories": None})
+            continue
         item = {"sku": sku, "name": product["name"]}
 
         if "Calories" in product:
@@ -291,7 +294,6 @@ def get_calorie_history(user_id):
 
 @app.errorhandler(Exception)
 def all_exception_handler(e):
-
     return 'Error', 500
 
 
